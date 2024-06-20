@@ -1,0 +1,676 @@
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+{%load static%}
+<body>
+
+    <header>
+        <video autoplay muted loop id="myVideo">
+            <source src="../../static/media/video/rain.mp4" type="video/mp4">
+        </video>
+
+        <div class="content">
+            <h1 class="logo">T R I U M F F</h1>
+
+            <div class="menu1">
+                <div class="menu_a"><a><img class="img1" src="../../static/media/img/wp.png" /></a></div>
+                <div class="menu_a"><a href="{% url 'my_cab'%}"><img class="img1" src="../../static/media/img/acc.png" /></a></div>
+                <div class="menu_a"><a href="{% url 'basket_page'%}"><img class="img1" src="../../static/media/img/bag.png" /></a></div>
+                <div class="menu">
+                    <img src="../../static/media/img/menu.png" onclick="myFunction()" class="dropbtn" />
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav id="nv">
+
+        <div id="myDropdown" class="dropdown-content">
+            {% for el in ctg_on_site %}
+            <a href="{{el.get_absolute_url}}" class="floating-button_3">{{el.name}}</a>
+            {%endfor%}
+        </div>
+
+    </nav>
+
+
+
+    <main>
+        {% for el in to_blocks_down %}
+        <div class="block">
+
+            <div class="bloc_text" style="margin-left:1%"><p>{{ el.name }}</p><p style="margin-right:1%">просмотр ></p></div>
+
+            <div class="in_block">
+                <div class="swiper">
+                    <div class="swiper-wrapper">
+                        {% for lel in el.pro.all %}
+                        <div class="swiper-slide" style="display: flex; flex-direction: column;">
+                            <img src="{{lel.image}}" name="{{lel.CAT_on_site.get_absolute_url}}1" onClick="getdetails(this)" style="cursor: pointer;" />
+                            <p style="margin-top: -12%; color: white;font-size: 25px; font-family: monospace;">{{lel.name}}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+
+    </main>
+
+    <footer>
+        <div class="footer_sec">
+            <h3>ИНФОРМАЦИЯ</h3>
+            <a>О НАС</a>
+            <a>ДОСТАВКА</a>
+            <a>ОПЛАТА</a>
+            <a>ПРАВИЛА ВОЗВРАТА ТОВАРА</a>
+            <a>ВОПРОСЫ И ОТВЕТЫ</a>
+            <a>ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</a>
+        </div>
+
+        <div class="footer_sec">
+            <h3>ЛИЧНЫЙ КАБИНЕТ</h3>
+            <a>РАССЫЛКА НОВОСТЕЙ</a>
+            <a>МОЕ ИЗБРАННОЕ</a>
+            <a>ВОЗВРАТ ТОВАРА</a>
+            <a>ИСТОРИЯ ЗАКАЗОВ</a>
+        </div>
+
+        <div class="footer_sec">
+            <h3>КОНТАКТЫ</h3>
+            <a></a>
+            <a></a>
+            <a></a>
+        </div>
+    </footer>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <script>
+    function myFunction() {
+        document.getElementById("myDropdown").classList.toggle("show");
+        document.getElementById("nv").classList.toggle("show_nv");
+    }
+
+    // Close the dropdown menu if the user clicks outside of it
+    window.onclick = function (event) {
+        if (!event.target.matches('.dropbtn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var i;
+            for (i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                    document.getElementById("nv").classList.toggle("show_nv");
+                }
+            }
+        }
+    }
+
+    $(document).scroll(function (e) {
+        $(window).scrollTop() > 150 ? $('.content').addClass('content__color') : $('.content').removeClass('content__color');
+    });
+
+    </script>
+    <script>
+
+    function getdetails(obj) {
+        window.location.href = obj.name
+    }
+
+slide_amount = 0
+    $(function () {
+        if($(document).width() > 480 ? true : false){slide_amount = $(document).width() / 320}
+        else {slide_amount = 2.6}
+
+        //-----------------------------------------------
+        var swiper = new Swiper('.swiper', {
+        slidesPerView: slide_amount,
+        direction: getDirection(),
+        navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+        },
+        on: {
+        resize: function () {
+            swiper.changeDirection(getDirection());
+        },
+        },
+        });
+        //-----------------------------------------------
+    });
+    window.addEventListener('resize', (e) => {
+        if ($(document).width() > 480 ? true : false) { slide_amount = $(document).width() / 320;}
+        else {slide_amount = 2.6}
+
+        //-----------------------------------------------
+        var swiper = new Swiper('.swiper', {
+        slidesPerView: slide_amount,
+        direction: getDirection(),
+        navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+        },
+        on: {
+        resize: function () {
+            swiper.changeDirection(getDirection());
+        },
+        },
+        });
+        //-----------------------------------------------
+    });
+
+
+    function getDirection() {
+      var direction = window.innerWidth <= 760 ? 'horizontal' : 'horizontal';
+
+      return direction;
+    }
+    </script>
+
+    <style>
+
+        @media screen and (min-width: 525px) { /*ПКШНАЯ*/
+            @font-face {
+                font-family: "bl_text";
+                src: url("../../static/media/fonts/bl_font.ttf");
+            }
+            @font-face {
+                font-family: "nunito-sans";
+                src: url("../../static/media/fonts/NunitoSans.ttf");
+            }
+            .bloc_text {
+                font-family: sans-serif;
+                display: flex;
+                align-items: center;
+                font-size: 50px;
+                /* font-weight: 800; */
+                height: 7%;
+                color: rgba(0,0,0,.5);
+                font-size: 27px;
+                justify-content: space-between;
+            }
+
+            .in_block {
+                height: 48%;
+                width: 93%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+                .in_block img {
+                    width: 95%;
+                    height: 95%;
+                    object-fit: cover;
+                }
+
+            html,
+            body {
+                position: relative;
+                height: 100%;
+            }
+
+            .swiper {
+                width: 100%;
+                height: 100%;
+            }
+
+            .swiper-slide {
+                text-align: center;
+                font-size: 18px;
+                background: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-left: 10px;
+            }
+
+            @media (max-width: 760px) {
+                .swiper-button-next {
+                    right: 20px;
+                    transform: rotate(90deg);
+                }
+
+                .swiper-button-prev {
+                    left: 20px;
+                    transform: rotate(90deg);
+                }
+            }
+
+            .swiper-button-prev, .swiper-button-next {
+                color: white;
+            }
+
+
+            nav {
+                position: fixed;
+                top: 0;
+                z-index: -1;
+                height: 100%;
+                width: 76%;
+            }
+            /*---------------------------Dropdown Button------------------------*/
+            .dropbtn {
+                height: 50px;
+                width: 50px;
+                margin: 20px;
+                font-size: 60px;
+                color: lightcoral;
+                margin-right: 50px;
+            }
+
+            .menu {
+                position: relative;
+                display: inline-block;
+            }
+
+            .dropbtn:hover, .dropbtn:focus {
+                transition: 1s;
+                transform: scale(1.2);
+            }
+            /*-----------------------------------------------------------------*/
+
+            /* Dropdown Content (Hidden by Default) */
+            .dropdown-content {
+                width: 100%;
+                height: 100%;
+                display: none;
+                position: absolute;
+                background-color: #f1f1f1;
+                min-width: 160px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 1;
+            }
+
+                /* Links inside the dropdown */
+                .dropdown-content a {
+                    color: #413131;
+                    padding: 18px 16px;
+                    text-decoration: none;
+                    font-size: 52px;
+                    display: block;
+                }
+
+                    /* Change color of dropdown links on hover */
+                    .dropdown-content a:hover {
+                        background-color: #ddd;
+                    }
+
+            .show {
+                display: block;
+            }
+
+            .show_nv {
+                z-index: 99;
+            }
+            /* ------------------------------------------------------------- */
+
+
+
+            header {
+                height: 100%;
+            }
+
+            @font-face {
+                font-family: "fname";
+                src: url("../../static/media/fonts/font.otf");
+            }
+
+            .logo {
+                font-size: 70px;
+                font-family: nunito-sans;
+                margin-top: 0%;
+                font-weight: 100;
+                color: #00000057;
+            }
+
+
+            body {
+                margin: 0px;
+            }
+
+            .img1 {
+                height: 50px;
+                width: 50px;
+                margin: 20px;
+                font-size: 60px;
+                color: lightcoral;
+            }
+
+            .menu1 {
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+            }
+
+            #myVideo {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                min-width: 100%;
+                min-height: 100%;
+            }
+
+            /* Add some content at the bottom of the video/page */
+            .content {
+                position: fixed;
+                background: rgb(255 255 255 / 25%);
+                color: #f1f1f1;
+                padding: 20px;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                height: 8.5%;
+                width: 100%;
+                z-index: 99;
+            }
+
+            .content__color {
+                background: #ffffff;
+                box-shadow: 10px 5px 5px #ff000078;
+            }
+
+            .myBtn {
+                font-size: 18px;
+                padding: 10px;
+                border: none;
+                background: #000;
+                color: #fff;
+                cursor: pointer;
+                width: 100px;
+                height: 100px;
+            }
+
+            #myBtn:hover {
+                background: #ddd;
+                color: black;
+            }
+
+            footer {
+                display: flex;
+                flex-direction: row;
+                border-top: 1px dashed #9E9E9E;
+                justify-content: space-evenly;
+            }
+
+            .footer_sec {
+                display: flex;
+                flex-direction: column;
+                margin-left: 20px;
+                font-size: 19px;
+            }
+
+            footer a {
+                margin-bottom: 20px;
+                font-family: monospace;
+                color: #372c2cc2;
+            }
+
+            footer h3 {
+                margin-bottom: 20px;
+                font-family: monospace;
+                color: #ff2929;
+                text-decoration: underline;
+            }
+        }
+        /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+        /*                                                                                                                                                                     */
+        /*                                                                                                                                                                     */
+        /*                                                                                                                                                                     */
+        /*                                                                                                                                                                     */
+        /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+        @media screen and (max-width: 525px) { /*МОБИЛЬНАЯ*/
+
+            @font-face {
+                font-family: "bl_text";
+                src: url("../../static/media/fonts/bl_font.ttf");
+            }
+
+            .bloc_text {
+                font-family: sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 14px;
+                /* font-weight: 800; */
+                height: 7%;
+                color: rgba(0,0,0,.5);
+            }
+
+            .in_block {
+                height: 33%;
+            }
+
+                .in_block img {
+                    width: 95%;
+                    height: 95%;
+                }
+
+            html,
+            body {
+                position: relative;
+                height: 100%;
+            }
+
+            .swiper {
+                width: 100%;
+                height: 100%;
+            }
+
+            .swiper-slide {
+                text-align: center;
+                font-size: 18px;
+                background: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-left: 10px;
+            }
+
+            @media (max-width: 760px) {
+                .swiper-button-next {
+                    right: 20px;
+                    display: none
+                }
+
+                .swiper-button-prev {
+                    left: 20px;
+                    display: none
+                }
+            }
+
+            .swiper-button-prev, .swiper-button-next {
+                color: white;
+            }
+
+
+            nav {
+                position: fixed;
+                top: 0;
+                z-index: -1;
+                height: 100%;
+                width: 76%;
+            }
+            /*---------------------------Dropdown Button------------------------*/
+            .dropbtn {
+                height: 30px;
+                width: 30px;
+                font-size: 60px;
+                color: lightcoral;
+            }
+
+            .menu {
+                position: relative;
+                display: inline-block;
+                width: 13%;
+                margin-left: 20px;
+            }
+
+            .menu1 {
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                margin-left: 7%;
+            }
+
+            .menu_a {
+                width: 10%;
+                margin-left: 21px;
+            }
+
+            .dropbtn:hover, .dropbtn:focus {
+                transition: 1s;
+                transform: scale(1.2);
+            }
+            /*-----------------------------------------------------------------*/
+
+            /* Dropdown Content (Hidden by Default) */
+            .dropdown-content {
+                width: 100%;
+                height: 100%;
+                display: none;
+                position: absolute;
+                background-color: #f1f1f1;
+                min-width: 160px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 1;
+            }
+
+                /* Links inside the dropdown */
+                .dropdown-content a {
+                    color: #413131;
+                    padding: 14px 16px;
+                    text-decoration: none;
+                    font-size: 23px;
+                    display: block;
+                }
+
+                    /* Change color of dropdown links on hover */
+                    .dropdown-content a:hover {
+                        background-color: #ddd;
+                    }
+
+            .show {
+                display: block;
+            }
+
+            .show_nv {
+                z-index: 99;
+            }
+            /* ------------------------------------------------------------- */
+
+
+
+            header {
+                height: 100%;
+            }
+
+            @font-face {
+                font-family: "fname";
+                src: url("../../static/media/fonts/font.otf");
+            }
+
+            .logo {
+                color: #ff2929;
+                font-family: 'fname';
+                font-size: 28px;
+                margin-top: 7px;
+            }
+
+
+            body {
+                margin: 0px;
+            }
+
+            .img1 {
+                height: 30px;
+                width: 30px;
+                font-size: 60px;
+                color: lightcoral;
+            }
+
+
+
+            #myVideo {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                min-width: 100%;
+                min-height: 100%;
+            }
+
+            /* Add some content at the bottom of the video/page */
+            .content {
+                position: fixed;
+                background: rgb(255 255 255 / 25%);
+                color: #f1f1f1;
+                padding: 10px;
+                display: flex;
+                height: 7.5%;
+                width: 100%;
+                z-index: 99;
+                justify-content: space-between;
+            }
+
+            .content__color {
+                background: #ffffff;
+            }
+
+            .myBtn {
+                font-size: 18px;
+                padding: 10px;
+                border: none;
+                background: #000;
+                color: #fff;
+                cursor: pointer;
+                width: 100px;
+                height: 100px;
+            }
+
+            #myBtn:hover {
+                background: #ddd;
+                color: black;
+            }
+
+            footer {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .footer_sec {
+                display: flex;
+                flex-direction: column;
+                margin-left: 11px;
+                font-size: 17px;
+            }
+
+            footer a {
+                margin-bottom: 8px;
+                font-family: monospace;
+                color: #372c2cc2;
+            }
+
+            footer h3 {
+                margin-bottom: 6px;
+                font-family: monospace;
+                color: #ff2929;
+                text-decoration: underline;
+            }
+        }
+    </style>
+</body>
+</html>

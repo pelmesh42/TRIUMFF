@@ -1,0 +1,212 @@
+{% extends 'main/main.html' %}
+{%load static%}
+
+{% block content %}
+    {% if user.is_authenticated %}
+<div class="all">
+    <h1>Личный кабинет</h1> 
+    <p class="phone">{{user.phone}} <a style="margin-left: 10px; color: #80cde5;" href="{% url 'logout' %}">Log Out</a></p> 
+    <div class="goods">
+    {% for el in pib %}
+        <div class="good">
+            <h3>{{el.name}}</h3> 
+            <p>{{el.price}}</p>
+            <img src="../../../{{el.image}}" />  
+        </div>     
+    {% endfor %}
+    </div>   
+</div>
+
+    {%else%}
+<div class="authentication_Form">
+    <h4>Авторизация</h4>
+    <p>Номер телефона:</p>
+    <form id="myform">
+        <input type="tel" id="phone_input">
+        <!--<input type="number" id="alt_code">-->
+        <button id="code_button" class="code_button" type="submit">подтвердить</button>
+        <p class="not_active" id="p_yes">незарегистрированный номер телефона</p>
+    </form>
+
+    <!--<form id="codeform" method="post">
+        {% csrf_token %}
+        [[code_form.as_p]]
+        <button id="answer_button" class="answer_button" type="submit">подтвердить</button>
+    </form>-->
+
+</div>
+    {% endif %}
+
+<style>
+
+    .logout {
+    }
+
+    .phone {
+    text-align: center;
+    font-family: math;
+    font-size: 20px;
+    color: #898989;
+    font-weight: normal;
+    margin-top: -30px;
+}
+
+    .all {
+    margin-top: 50px;
+    background-color: #f8f6f6;
+    }
+
+    .all h1 {
+    font-size: 50px;
+    font-family: nunito-sans;
+    margin-top: 0%;
+    font-weight: 100;
+    color: #00000057;
+    text-align: center;
+    }
+
+    .goods {
+    width: 90%;
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    justify-content: center;
+}
+
+    .good {
+    display: flex;
+    width: 600px;
+    height: 700px;
+    background-color: white;
+    flex-direction: column;
+    align-items: center;
+    }
+
+    .good h3 {
+    font-size: 24px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    text-align: center;
+    }
+
+    .good p {
+    }
+
+    .good img {
+    width: 50%;
+    }
+
+
+    footer{
+        margin-top: 40px !important;
+    }
+
+    .authentication_Form {
+        width: 440px;
+        height: 420px;
+        background: #f8f6f6;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        margin-top: 5%;
+    }
+
+    .authentication_Form h4 {
+        font-weight: 300;
+        font-size: 20px;
+        text-transform: uppercase;
+        font-family: 'Cormorant Garamond', serif;
+    }
+
+    .authentication_Form form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .authentication_Form p {
+        font-family: math;
+        font-size: 20px;
+        color: #898989;
+        font-weight: normal;
+        margin: 2px auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .authentication_Form input {
+        height: 38px;
+        line-height: 38px;
+        padding: 0 10px;
+        background: #ffffff;
+        border: 1px solid #DDDDDD;
+        font-size: 15px;
+        font-family: 'Cormorant Garamond', serif;
+        color: #808080;
+        outline: none;
+    }
+
+    .authentication_Form button {
+        height: 38px;
+        line-height: 38px;
+        padding: 0 10px;
+        background: #ffffff;
+        border: 1px solid #DDDDDD;
+        font-size: 15px;
+        font-family: 'Cormorant Garamond', serif;
+        color: #808080;
+        outline: none;
+        margin-top: 10px;
+    }
+
+    .not_active {
+        display: none;
+        z-index: -1;
+    }
+
+    .active {
+        display: block;
+    }
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+<script>
+
+    $("#phone_input").mask("+7(999)999-9999");
+    var full_code = "mt8s7G11JmXstnZTvUD0"
+
+    $(document).ready(function () {
+
+        $("#myform").on("submit", function (event) {
+            event.preventDefault();
+            if (document.getElementById("phone_input").value.length > 10) {
+                $.ajax({
+                    url: '/my_cab',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        "result": 'send_code',
+                        "phone": document.getElementById('phone_input').value
+                    },
+                    success: function (data) {
+                        if (data.active) {
+                            location.reload()
+                        }
+
+                        document.getElementById("p_yes").classList.remove('not_active');
+                        document.getElementById("p_yes").classList.toggle("active");
+                        full_code = data.code
+                    }
+                });
+            } else {
+                alert('введите корректный номер');
+            }
+        });
+    });
+</script>
+{% endblock %}

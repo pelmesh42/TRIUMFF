@@ -1,0 +1,802 @@
+{% extends 'main/main.html' %}
+{% block content %}
+<!--_____________________________________________________-->
+
+{%load static%}
+
+<div class="prod">
+{% for el in product_on_site %}
+
+{#ВЫВОД МОДЕЛИ#}
+<div class="pro" id="{{el.id}}_pro">
+    <div class="model_content">
+    <div class="info">
+    <h1>{{el.name}}</h1>
+    <p>{{el.price}}₽</p>
+    <p>{{el.desc}}</p>
+    <p>{{el.MEASUREMENTS}}</p>
+    <p>{{el.COMPOSITION}}</p>
+    </div>
+    <div class="div_img1">
+    <img src="../../../{{el.image}}" />
+    {#УДАЛЕНИЕ И ДОБАВЛЕНИЕ В ПОНРАВИВШИЕСЯ#}
+{% if el.id not in s_data%}
+    <div class="like_sys">
+    <form method="POST" class="like_ajax">
+    {% csrf_token %}
+    <input value="{{ el.id }}" type="hidden" name="to_like"  id="{{el.id}}_i">
+    <button value="{{el.id}}_b" type="submit" class="like_buy" id="{{el.id}}_b"><img src="{% static 'main/like.png' %}" /></button>
+    </form>
+    </div>
+{%else%}
+    <div class="like_sys">
+    <form method="post" class="like_ajax">
+    {% csrf_token %}
+    <input value="{{ el.id }}" type="hidden" name="delete_from_like"  id="{{el.id}}_i">
+    <button value="{{el.id}}_b" type="submit" class="like_buy" id="{{el.id}}_b"><img src="{% static 'main/dislike.png' %}" /></button>
+    </form>
+    </div>
+{%endif%}
+{#УДАЛЕНИЕ И ДОБАВЛЕНИЕ В ПОНРАВИВШИЕСЯ#}
+    </div>
+</div>
+{#ВЫВОД МОДЕЛИ#}
+
+
+{#ФУНУЦИЯ ДОБАВЛЕНИЯ В КОРЗИНУ#}
+<div class="interface">
+{% if el.amount >= 1 %}
+
+<div class="b1_pro">
+ <form  method="POST" class="work_ajax">
+
+
+  <button id="{{ el.id }}_minus" value="{{ el.id }}_minus" class="minus" type="submit">-</button>
+  <input type="hidden" name="to_basket" value="{{ el.id }}">
+        
+        {% with kostil=forloop.counter0%}
+        <div class="inputs">
+                {% if el.id|slugify in b_data_gramm.keys|slugify %}
+                {% for key, value in b_data_gramm.items %}    
+  
+            
+                {% if key|slugify == el.id|slugify %}
+                <input class="Quantity" type="number" name="quantity" value="{{value|slugify}}" min="0" max="{{el.amount}}" id="{{ el.id }}_fm" required step="1" class="form_buy" readonly>  
+                {%endif%}
+
+                {% endfor %}
+
+                {%else%}
+                <input class="Quantity" type="number" name="quantity" value="0" min="0" max="{{el.amount}}" id="{{ el.id }}_fm" required step="1" class="form_buy" readonly>
+                {%endif%}
+            
+
+        </div>
+        <div hidden="true" id="{{ el.id }}_pr">{{ el.price }}</div>
+        {% endwith %}
+
+  <button id="{{ el.id }}_plus" value="{{ el.id }}_plus" class="plus" type="submit">+</button>
+   
+
+ {% csrf_token %}</form>
+</div>        
+
+{%else%}
+<div class="b3_pro">
+<b>Товара нет в наличии</b>
+</div>
+{%endif%}
+
+
+<div class="itog" style="display:none"><div id="{{ el.id }}_sum">0</div>₽</div>
+</div>
+</div>
+{% endfor %}
+{#ФУНУЦИЯ ДОБАВЛЕНИЯ В КОРЗИНУ#}
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<script>
+//    window.onhashchange = function () {
+//        alert("get your ass back here")
+//}
+
+$(function() {
+    var height = $('.pro').height() * 0.9;
+    $('.info').height(height);
+});
+
+window.addEventListener('resize', (e) => {
+    var height = $( '.pro' ).height()*0.9; 
+    $('.info').height(height);
+});
+
+var fired_button = ''
+$("button").click(function () {
+
+    fired_button = $(this).val();
+    var minus1 = document.getElementById(fired_button);
+    var plus1 = document.getElementById(fired_button);
+
+    var pr1 = document.getElementById(fired_button[0] + '_pr')
+    var input1 = document.getElementById(fired_button[0]+ '_fm');
+
+
+    if (fired_button == fired_button[0] + "_plus") {
+    input1.stepUp();
+    document.getElementById(fired_button[0]  + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    }
+
+    if (fired_button == fired_button[0] + "_minus") {
+    if (input1.value == 0) {document.getElementById(fired_button[0]  + "_pro").classList.toggle("not_show");}
+    input1.stepDown();
+    if (input1.value == 0) {document.getElementById(fired_button[0] + "_pro").classList.toggle("not_show");}
+
+    document.getElementById(fired_button[0]  + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    }
+
+});
+
+
+$(document).ready(function () {
+
+    $(".work_ajax").on("submit", function (event) {
+      event.preventDefault();
+      $.ajax({
+      url: '/basket_page',
+      type: "post",
+      'data': $(this).serialize(),
+      
+      success: function (response) {
+          console.log("Данные успешно отправлены!");
+      },
+    });
+  });
+
+/*-----------------------------------------------------------------------------------------*/
+    $(".like_ajax").on("submit", function (event) {
+      event.preventDefault();
+      $.ajax({
+      url: '/basket_page',
+      type: "post",
+      'data': $(this).serialize(),
+      
+      success: function (response) {
+          console.log("Данные успешно отправлены!");
+        
+        var inp = document.getElementById(fired_button[0] + '_i')
+        var but = document.getElementById(fired_button[0] + '_b')
+        alert(inp.name)
+        if (inp.name == 'to_like') {
+            inp.name = 'delete_from_like'
+            but.innerHTML = '<img src="{% static 'main/dislike.png' %}" />'
+        }
+        else {{if (inp.name == 'delete_from_like')         
+            inp.name = 'to_like'
+            but.innerHTML = '<img src="{% static 'main/like.png' %}" />'   
+        }}
+
+      },
+    });
+    });
+
+});
+
+$("input").on("input", function () {
+    var fired_input = $(this).attr("id");
+    var pr1 = document.getElementById(fired_input[0] + '_pr')
+    var input1 = document.getElementById(fired_input);
+    document.getElementById(fired_input[0] + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    //alert($(this).attr("id")); 
+});
+
+window.onload = function () {
+        try {
+            for (let i = 0; i <= $('.pro').length; i++) {
+                var pr1 = document.getElementById(i.toString() + '_pr')
+                var input1 = document.getElementById(i.toString() + '_fm');
+                document.getElementById(i.toString() + '_sum').innerHTML = input1.value * pr1.innerHTML;                
+            }
+        }
+        catch (err) {}
+    }
+
+</script>
+<style>
+@media screen and (min-width: 525px) { /*ПКШНАЯ*/
+
+    body {
+        background-color: #f8f6f6;
+    }
+    main {
+    display: flex;
+    margin-top: 2%;
+    height: 100%;
+    width: 83%;
+    flex-direction: row;
+    margin-left: 10%;
+    align-content: center;
+    background-color: white;
+    }
+
+.not_show {
+    display:none;
+}
+.info::-webkit-scrollbar {
+    width: 5px;
+}
+
+.info::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 3px solid #9E9E9E;
+}
+
+.info::-webkit-scrollbar-track {
+    background: #9e9e9e5e;
+}
+
+body::-webkit-scrollbar {
+    width: 9px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 3px solid #e1392d;
+}
+
+body::-webkit-scrollbar-track {
+    background: #9e9e9e00;
+}
+
+.Block_name {
+    background-color: #cd96961a;
+    font-size: 16px;
+    font-family: math;
+    color: #796767cf;
+    display: flex;
+    justify-content: center;
+    max-height: 9%;
+    align-items: center;
+    margin-top: 2%;
+    }   
+
+    .pro {
+    width: 90%;
+    margin-left: 3%;
+    margin-bottom: 2%;
+    border: 1px solid #ccc;
+    border-style: dashed;
+    height: fit-content;
+    background-color: #f3e2e23b;
+}
+
+    .pro img {
+    width: 100%;
+    max-height: 86%;
+    object-fit: contain;
+    }
+
+    .pro h1 {
+    font-size: 24px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    text-align: center;
+    }
+
+    .inputs {
+        width: 62%;
+    }
+
+    .pro p {
+    text-align: center;
+    margin: 0;
+    font-family: math;
+    font-size: 16px;
+    }
+
+    .prod {
+        display: flex;
+        margin-top: 3%;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+    }
+
+.model_content {
+    display: flex;
+    flex-direction: row-reverse;
+    max-height: 108%;
+}
+
+   .pro .info {
+    overflow: auto;
+    max-height: 251px;
+    width: 93%;
+    margin-bottom: 10%;
+    margin-top: 4%;
+    background-color: white;
+}
+
+    .div_img1 {
+    position: relative;
+    width: 20%;
+    min-width: 180px;
+    min-height: 320px;
+    }
+
+    .div_img1 .like_sys {
+    position: absolute;
+    top: 80%;
+    left: 81%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+}
+    
+
+    .work_ajax {
+    display: flex;
+    margin-bottom: 2%;
+    justify-content: space-evenly;
+    }
+
+    .Quantity {
+    width: 100%;
+    text-align: center;
+    border-color: #0000003d;
+    }   
+
+    
+
+    .like_buy {
+    width: 51px;
+    background-color: transparent;
+    border-color: transparent;
+}
+    .like_buy img {
+    width: 100%;
+    height: 100%;
+    }
+
+   .interface {
+    width: 50%;
+    margin-left: 37%;
+    margin-top: -8%;
+    }
+
+    .itog {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-family: math;
+    font-size: 12px;
+    color: #232323d6;
+    }
+
+    .minus {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px 0px 0px 20px;
+    border-color: #fa171787;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .plus {
+    width: 30px;
+    height: 30px;
+    border-radius: 0px 5px 20px 0px;
+    border-color: #fa171787;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .b3_pro {
+        text-align: center;
+        margin: 3%;
+    }
+
+    .b3_pro b {
+    font-size: 14px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    }
+
+}
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+@media screen and (max-width: 525px) { /*МОБИЛЬНАЯ*/
+    .Block_name {
+    background-color: #cd96961a;
+    font-size: 16px;
+    font-family: math;
+    color: #796767cf;
+    display: flex;
+    justify-content: center;
+    max-height: 9%;
+    align-items: center;
+    }
+    .info {
+        display:none
+    }
+    .pro {
+    width: 45%;
+    margin-left: 3%;
+    margin-bottom: 8%;
+    height: -webkit-fill-available;
+    border: 1px solid #ccc;
+    border-style: dashed;
+    }
+
+    .pro img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pro h1{
+    font-size: 16px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    text-align: center;
+    }
+
+    .pro p {
+    text-align: center;
+    margin: 0;
+    font-family: math;
+    font-size: 12px;
+    }
+
+    .prod {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 3%;
+    }
+
+    .div_img1 {
+    width: 100%;
+    height: 57%;
+    }
+    .model_content {
+
+    }
+
+    .work_ajax {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1%;
+    }
+
+    .Quantity {
+    width: 100;
+    text-align: center;
+    border-color: #0000003d;
+    }
+
+    .like_sys {
+    margin-top: -27%;
+    margin-left: 69%;
+    }
+
+    .like_buy {
+    width: 51px;
+    background-color: transparent;
+    border-color: transparent;
+
+    }
+    .like_buy img {
+    width: 100%;
+    height: 100%;
+    }
+
+    .interface {
+    margin-top: 5%;
+    }
+
+    .itog {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-family: math;
+    font-size: 12px;
+    color: #232323d6;
+    }
+
+    .minus {
+    border-radius: 5px 0px 0px 20px;
+    border-color: #0000004d;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .plus {
+    border-radius: 0px 5px 20px 0px;
+    border-color: #00000057;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .b3_pro {
+        text-align: center;
+        margin: 3%;
+    }
+
+    .b3_pro b {
+    font-size: 14px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    }
+}
+    
+</style>
+
+<!--_____________________________________________________-->
+<div action="" class="wedding">
+<div class="form-inner">
+<div class="form-content">
+
+    <form id="myform">
+        <input type="tel" id="phone_input" placeholder="телефон">
+        <button id="code_button" class="code_button" type="submit">Подтвердить номер телефона</button>
+        <p class="not_active" id="p_yes">Код был отправлен</p>
+    </form>
+
+    <input type="number" id="code_input" max="8" placeholder="Код из смс"/>
+
+    <form action="" method="post" id="form_of_oplata">
+        {% csrf_token %}
+        <h3>имя:</h3>
+        <p>{{buy_out.name}}</p>
+        <h3>фамилия:</h3>
+        <p>{{buy_out.sername}}</p>
+        <h3>EMAIL:</h3>
+        <p>{{buy_out.email}}</p>
+        <h3>адрес:</h3>
+        <p>{{buy_out.adress}}</p>
+        <h3>Комментарий:</h3>
+        <p>{{buy_out.comment}}</p>
+        <button class="not_active" id="oplata" type="submit">Кнопка перехода к оплате</button>
+    </form>
+
+</div>
+</div>
+</div>
+
+    <div id="kassa" class="not_active"><!--class="not_active"--> 
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" value="online_kassa" name="kassa_bt" id="kassa_my_bt">
+        </form>
+    </div>
+    <!--*телефон еще раз (должен совподать с сессеонным), плюс пароноидальную проверку-->
+
+<style>
+
+    #code_button {
+    margin: 4px 0;
+    padding: 0 10px;
+    background: #9e9e9e;
+    color: #ffffff;
+    font-size: 14px;
+    text-transform: uppercase;
+    border-width: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: .2s linear;
+    }
+
+.wedding {
+    position: relative;
+    max-width: 320px;
+    text-align: center;
+    margin-right: 4%;
+}
+
+
+.form-inner:before {
+   display: inline-block;
+   margin-top: -45px;
+   content: url(https://html5book.ru/wp-content/uploads/2017/05/form-flower.png);
+}
+.form-inner {
+    padding: 0 40px 10px;
+    margin-top: 45px;
+    background: #ffffff;
+    border-radius: 2px;
+    min-width: 240px;
+    box-shadow: 0 0 6px 1px rgba(0, 0, 0, .1);
+}
+.form-inner h2 {
+   font-weight: 300;
+   font-size: 20px;
+   text-transform: uppercase;
+   font-family: 'Cormorant Garamond', serif;
+}
+.form-content {
+    position: relative;
+    margin: 30px -40px 0 -40px;
+    padding: 10px 40px 0 40px;
+    background: #f3e2e23b;
+}
+.form-content:before {
+   content: "";
+   position: absolute;
+   top: -4px;
+   right: 0;
+   left: 0;
+   height: 2px;
+   border-top: 1px solid #DDDDDD;
+   border-bottom: 1px solid #DDDDDD;
+}
+.form-content h3 {
+    font-family: math;
+    font-size: 20px;
+    color: #898989;
+    font-weight: normal;
+    margin: 2px;
+}
+.form-content input, .form-content select {
+    height: 38px;
+    line-height: 38px;
+    padding: 0 10px;
+    background: #ffffff;
+    border: 1px solid #DDDDDD;
+    font-size: 15px;
+    font-family: 'Cormorant Garamond', serif;
+    color: #808080;
+    outline: none;
+}
+.form-content input {
+   width: 100%;
+}
+.form-content input:focus, .form-content select:focus {
+   border-color: #C44D58;
+}
+    .form-content input[type="submit"] {
+        margin: 20px 0;
+        padding: 0 10px;
+        background: #9e9e9e;
+        color: #ffffff;
+        font-size: 18px;
+        text-transform: uppercase;
+        border-width: 0;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: .2s linear
+    }
+.form-content input[type="submit"]:hover {
+   background: #C44D58;
+}
+
+
+
+    #all {
+    width: 35%;
+    margin-left: 4%;
+    margin-right: 2%;
+    border: 4px double black;
+    height: min-content;
+    margin-top: 3%;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .not_active {
+        display:none;
+        z-index: -1;
+    }
+
+    .active {
+        display: block;
+    }
+
+    .kassa {
+    position: absolute;
+    height: 200px;
+    width: 200px;
+    left: 50%;
+    top: 50%;
+    border: 1px solid;
+    }
+
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js"></script>
+<script>
+
+    //const btns = document.querySelectorAll(".code_button");
+
+    //for (var i = 0; i < btns.length; i++) {
+    //    btns[i].addEventListener("click", function () {
+    //    })
+    //}
+
+    $("#phone_input").mask("+7(999)999-9999");
+    var full_code = "mt8s7G11JmXstnZTvUD0"
+
+    $(document).ready(function () {
+
+        $("#kassa_my_bt").click(function () {document.getElementById('all').innerHTML = '404';});
+
+        $("#myform").on("submit", function (event) {
+            event.preventDefault();
+            if (document.getElementById("phone_input").value.length > 10) {
+                $.ajax({
+                    url: '/basket_page',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        "result": 'send_code',
+                        "phone": document.getElementById('phone_input').value
+                    },
+                    success: function (data) {
+                        //alert(data.code)
+                        document.getElementById("p_yes").classList.remove('not_active');
+                        document.getElementById("p_yes").classList.toggle("active");
+
+                        if (document.getElementById("oplata").classList.contains('active')) {
+                        document.getElementById("oplata").classList.toggle('not_active');
+                        document.getElementById("oplata").classList.remove('active');
+                        }
+                        full_code = data.code
+                    }
+                });
+            } else {
+                alert('введите корректный номер'); 
+            }
+        });
+
+        $("#form_of_oplata").on("submit", function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: '/basket_page',
+                type: 'post',
+                //dataType: 'json',
+                data: {
+                    "result": 'send_data',
+                    name: $('#id_name').val(),
+                    sername: $('#id_sername').val(),
+                    adress: $('#id_adress').val(),
+                    email: $('#id_email').val(),
+                    comment: $('#id_comment').val(),
+
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                    action: 'post'
+                },
+                success: function (data) {
+                    document.getElementById("kassa").classList.remove('not_active');
+                    document.getElementById("kassa").classList.toggle("kassa");                   
+                }
+            });
+        });
+    });
+
+    $("#code_input").on('change keydown paste input', function () {
+
+        if (this.value == full_code) {
+            document.getElementById("oplata").classList.remove('not_active');
+            document.getElementById("oplata").classList.toggle("active");
+        }
+    });
+
+</script>
+{% endblock %}
+
+

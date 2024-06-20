@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+{% for el in story %}
+       <div>
+           <p>{{el.name}}</p>  
+           <p>{{el.desc}}</p>
+           <p>{{el.id}}</p>
+            <div>
+
+            <form method="post" name="to_like">
+            {% csrf_token %}
+            <button name="to_like" value="{{el.id}}" type="submit">like</button>
+            </form>
+            </div>
+        <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
+       </div>
+{%endfor%}
+
+</body>
+
+</html>

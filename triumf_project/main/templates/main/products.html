@@ -1,0 +1,555 @@
+<script>
+
+</script>
+{% extends 'main/main.html' %}
+{% block content %}
+{%load static%}
+
+<div class="Block_name"><h2>{{NAME}}</h2></div>
+
+<div class="prod">
+{% for el in product_on_site %}
+
+{#ВЫВОД МОДЕЛИ#}
+<div class="pro" id="{% cycle 'row1' 'row2' %}">
+    <div class="model_content">
+    <div class="info">
+    <a href="{%url 'product_dv' el.id%}" style="text-decoration: none;"><h1>{{el.name}}</h1></a>
+    <p>{{el.price}}₽</p>
+    <p>{{el.desc}}</p>
+    <p>{{el.MEASUREMENTS}}</p>
+    <p>{{el.COMPOSITION}}</p>
+    </div>
+    <div class="div_img1">
+    <a href="{%url 'product_dv' el.id%}" style="text-decoration: none;">
+    <img src="../../../{{el.image}}" />
+    </a>
+    {#УДАЛЕНИЕ И ДОБАВЛЕНИЕ В ПОНРАВИВШИЕСЯ#}
+{% if el.id not in s_data%}
+    <div class="like_sys">
+    <form method="POST" class="like_ajax">
+    {% csrf_token %}
+    <input value="{{ el.id }}" type="hidden" name="to_like"  id="{{el.id}}_i">
+    <button value="{{el.id}}_b" type="submit" class="like_buy" id="{{el.id}}_b"><img src="{% static 'main/like.png' %}" /></button>
+    </form>
+    </div>
+{%else%}
+    <div class="like_sys">
+    <form method="post" class="like_ajax">
+    {% csrf_token %}
+    <input value="{{ el.id }}" type="hidden" name="delete_from_like"  id="{{el.id}}_i">
+    <button value="{{el.id}}_b" type="submit" class="like_buy" id="{{el.id}}_b"><img src="{% static 'main/dislike.png' %}" /></button>
+    </form>
+    </div>
+{%endif%}
+{#УДАЛЕНИЕ И ДОБАВЛЕНИЕ В ПОНРАВИВШИЕСЯ#}
+    </div>
+</div>
+{#ВЫВОД МОДЕЛИ#}
+
+
+{#ФУНУЦИЯ ДОБАВЛЕНИЯ В КОРЗИНУ#}
+<div class="interface" style="display:none">
+{% if el.amount >= 1 %}
+
+<div class="b1_pro">
+ <form  method="POST" class="work_ajax">
+
+
+  <button id="{{ forloop.counter0 }}_minus" value="{{ forloop.counter0 }}_minus" class="minus" type="submit">-</button>
+  <input type="hidden" name="to_basket" value="{{ el.id }}">
+        
+        {% with kostil=forloop.counter0%}
+        <div class="inputs">
+                {% if el.id|slugify in b_data_gramm.keys|slugify %}
+                {% for key, value in b_data_gramm.items %}    
+  
+            
+                {% if key|slugify == el.id|slugify %}
+                <input class="Quantity" type="number" name="quantity" value="{{value|slugify}}" min="0" max="{{el.amount}}" id="{{kostil}}_fm" required step="1" class="form_buy" readonly>  
+                {%endif%}
+
+                {% endfor %}
+
+                {%else%}
+                <input class="Quantity" type="number" name="quantity" value="0" min="0" max="{{el.amount}}" id="{{kostil}}_fm" required step="1" class="form_buy" readonly>
+                {%endif%}
+            
+
+        </div>
+        <div hidden="true" id="{{kostil}}_pr">{{ el.price }}</div>
+        {% endwith %}
+
+  <button id="{{ forloop.counter0 }}_plus" value="{{ forloop.counter0 }}_plus" class="plus" type="submit">+</button>
+   
+
+ {% csrf_token %}</form>
+</div>        
+
+{%else%}
+<div class="b3_pro">
+<b>Товара нет в наличии</b>
+</div>
+{%endif%}
+
+
+<div class="itog" style="display:none"><div id="{{ forloop.counter0 }}_sum">0</div>₽</div>
+</div>
+</div>
+{% endfor %}
+{#ФУНУЦИЯ ДОБАВЛЕНИЯ В КОРЗИНУ#}
+
+
+</div>
+
+<div class="pagination">
+
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+        <a style="display:none" href="?page=1">&laquo; first</a>
+        <a style="color: #FF9800;" href="/ctg/{{pk}}/{{ page_obj.previous_page_number }}"><</a>
+        {%else%}
+        <a style="color: #FF9800;"><</a>
+        {% endif %}
+
+        {% for page in page_obj.paginator.page_range %}
+        {%if page <= page_obj.number|add:3 and page >= page_obj.number|add:-3 %}
+        {% if page != page_obj.number %}
+        <a href="/ctg/{{pk}}/{{ page }}">{{ page }}</a>
+        {% endif %}
+        {% endif %}
+
+        {% if page == page_obj.number %}
+        <a class="active">{{ page }}</a>
+        {% endif %}
+
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a style="color: #FF9800;" href="/ctg/{{pk}}/{{ page_obj.next_page_number }}">></a>
+        <a style="display:none" href="/ctg/{{pk}}/{{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {%else%}
+        <a style="color: #FF9800;">></a>
+        {% endif %}
+    </span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<script>
+
+
+$(function() {
+    var height = $( '.pro img' ).height(); 
+    $('.info').height(height);
+});
+
+window.addEventListener('resize', (e) => {
+    var height = $( '.pro img' ).height(); 
+    $('.info').height(height);
+});
+
+var fired_button = ''
+$("button").click(function () {
+
+    fired_button = $(this).val();
+    var minus1 = document.getElementById(fired_button);
+    var plus1 = document.getElementById(fired_button);
+
+    var pr1 = document.getElementById(fired_button[0] + '_pr')
+    var input1 = document.getElementById(fired_button[0]+ '_fm');
+
+
+    if (fired_button == fired_button[0] + "_plus") {
+    input1.stepUp();
+    document.getElementById(fired_button[0]  + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    }
+
+    if (fired_button == fired_button[0] + "_minus") {
+    input1.stepDown();
+    document.getElementById(fired_button[0]  + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    }
+
+});
+
+PK = {{ pk }};
+PK_2 = {{ pk_2 }};
+$(document).ready(function () {
+
+  $(".work_ajax").on("submit", function (event) {
+      event.preventDefault();
+      $.ajax({
+      url: '/ctg/' + PK + '/' + PK_2 + '/',
+      type: "post",
+      'data': $(this).serialize(),
+      
+      success: function (response) {
+          console.log("Данные успешно отправлены!");
+      },
+    });
+  });
+
+/*-----------------------------------------------------------------------------------------*/
+    $(".like_ajax").on("submit", function (event) {
+      event.preventDefault();
+      $.ajax({
+      url: '/ctg/' + PK + '/' + PK_2 + '/',
+      type: "post",
+      'data': $(this).serialize(),
+      
+      success: function (response) {
+          console.log("Данные успешно отправлены!");
+        
+        var inp = document.getElementById(fired_button[0] + '_i')
+        var but = document.getElementById(fired_button[0] + '_b')
+        alert(inp.name)
+        if (inp.name == 'to_like') {
+            inp.name = 'delete_from_like'
+            but.innerHTML = '<img src="{% static 'main/dislike.png' %}" />'
+        }
+        else {{if (inp.name == 'delete_from_like')         
+            inp.name = 'to_like'
+            but.innerHTML = '<img src="{% static 'main/like.png' %}" />'   
+        }}
+
+      },
+    });
+    });
+
+});
+
+$("input").on("input", function () {
+    var fired_input = $(this).attr("id");
+    var pr1 = document.getElementById(fired_input[0] + '_pr')
+    var input1 = document.getElementById(fired_input);
+    document.getElementById(fired_input[0] + '_sum').innerHTML = input1.value * pr1.innerHTML;
+    //alert($(this).attr("id")); 
+});
+
+window.onload = function () {
+        try {
+            for (let i = 0; i <= $('.pro').length; i++) {
+                var pr1 = document.getElementById(i.toString() + '_pr')
+                var input1 = document.getElementById(i.toString() + '_fm');
+                document.getElementById(i.toString() + '_sum').innerHTML = input1.value * pr1.innerHTML;                
+            }
+        }
+        catch (err) {}
+    }
+
+</script>
+<style>
+@media screen and (min-width: 525px) { /*ПКШНАЯ*/
+
+.info::-webkit-scrollbar {
+    width: 5px;
+}
+
+.info::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 3px solid #9E9E9E;
+}
+
+.info::-webkit-scrollbar-track {
+    background: #9e9e9e5e;
+}
+
+body::-webkit-scrollbar {
+    width: 9px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 3px solid #e1392d;
+}
+
+body::-webkit-scrollbar-track {
+    background: #9e9e9e00;
+}
+
+.Block_name {
+    background-color: #cd96961a;
+    font-size: 16px;
+    font-family: math;
+    color: #796767cf;
+    display: flex;
+    justify-content: center;
+    max-height: 9%;
+    align-items: center;
+    margin-top: 2%;
+    }
+
+    .pro {
+        min-width: 400px;
+        width: 30%;
+        margin-left: 3%;
+        margin-bottom: 2%;
+        height: -webkit-fill-available;
+        border: 1px solid #ccc;
+        border-style: dashed;
+    }
+
+    .pro img {
+        width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .pro h1 {
+    font-size: 24px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    text-align: center;
+    }
+
+    .inputs {
+        width: 62%;
+    }
+
+    .pro p {
+    text-align: center;
+    margin: 0;
+    font-family: math;
+    font-size: 16px;
+    }
+
+    .prod {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 3%;
+    }
+
+    .model_content {
+    display: flex;
+    flex-direction: row-reverse;
+    }
+
+    .pro .info {
+    overflow: auto;
+    max-height: 50%;
+    width: 50%;
+    }
+
+    .div_img1 {
+    position: relative;
+    width: 50%;
+    }
+
+    .div_img1 .like_sys {
+    position: absolute;
+    top: 96%;
+    left: 88%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    }
+    
+
+    .work_ajax {
+    display: flex;
+    margin-bottom: 2%;
+    justify-content: space-evenly;
+    }
+
+    .Quantity {
+    width: 100%;
+    text-align: center;
+    border-color: #0000003d;
+    }   
+
+    
+
+    .like_buy {
+    width: 51px;
+    background-color: transparent;
+    border-color: transparent;
+
+    }
+    .like_buy img {
+    width: 100%;
+    height: 100%;
+    }
+
+    .interface {
+    margin-top: 4%;
+    margin-right: 49%;
+    width: 50%;
+    }
+
+    .itog {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-family: math;
+    font-size: 12px;
+    color: #232323d6;
+    }
+
+    .minus {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px 0px 0px 20px;
+    border-color: #0000004d;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .plus {
+    width: 30px;
+    height: 30px;
+    border-radius: 0px 5px 20px 0px;
+    border-color: #00000057;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .b3_pro {
+        text-align: center;
+        margin: 3%;
+    }
+
+    .b3_pro b {
+    font-size: 14px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    }
+
+}
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*                                                                                                                                                                     */
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+@media screen and (max-width: 525px) { /*МОБИЛЬНАЯ*/
+    .Block_name {
+    background-color: #cd96961a;
+    font-size: 16px;
+    font-family: math;
+    color: #796767cf;
+    display: flex;
+    justify-content: center;
+    max-height: 9%;
+    align-items: center;
+    }
+    .info {
+        display:none
+    }
+    .pro {
+    width: 45%;
+    margin-left: 3%;
+    margin-bottom: 8%;
+    height: -webkit-fill-available;
+    border: 1px solid #ccc;
+    border-style: dashed;
+    }
+
+    .pro img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pro h1{
+    font-size: 16px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    text-align: center;
+    }
+
+    .pro p {
+    text-align: center;
+    margin: 0;
+    font-family: math;
+    font-size: 12px;
+    }
+
+    .prod {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 3%;
+    }
+
+    .div_img1 {
+    width: 100%;
+    height: 57%;
+    }
+    .model_content {
+
+    }
+
+    .work_ajax {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1%;
+    }
+
+    .Quantity {
+    width: 100;
+    text-align: center;
+    border-color: #0000003d;
+    }
+
+    .like_sys {
+    margin-top: -27%;
+    margin-left: 69%;
+    }
+
+    .like_buy {
+    width: 51px;
+    background-color: transparent;
+    border-color: transparent;
+
+    }
+    .like_buy img {
+    width: 100%;
+    height: 100%;
+    }
+
+    .interface {
+    margin-top: 5%;
+    }
+
+    .itog {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-family: math;
+    font-size: 12px;
+    color: #232323d6;
+    }
+
+    .minus {
+    border-radius: 5px 0px 0px 20px;
+    border-color: #0000004d;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .plus {
+    border-radius: 0px 5px 20px 0px;
+    border-color: #00000057;
+    background-color: #f0f8ff00;
+    color: #0000005c;
+    }
+
+    .b3_pro {
+        text-align: center;
+        margin: 3%;
+    }
+
+    .b3_pro b {
+    font-size: 14px;
+    font-family: monospace;
+    color: #232323d6;
+    margin: 0;
+    }
+}
+    
+</style>
+{% endblock %}
